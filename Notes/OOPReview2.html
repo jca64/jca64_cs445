@@ -1,0 +1,532 @@
+
+<!-- saved from url=(0055)https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>OOP II: composition, inheritance, polymorphism, abstract, interfaces, etc</title>
+<style type="text/css">
+		<!--
+		body
+		{
+			margin-top: 20px;
+			margin-right: 20px;
+			margin-bottom: 20px;
+			margin-left: 20px;
+			color: #000066;
+			background-color: #FFFFFF;
+			font-family: "Century Schoolbook"; serif;
+		}
+		-->
+</style>
+
+</head>
+<body bgcolor="dddccc" class="vsc-initialized">
+<hr>
+<h2 align="center">OOP II: composition, inheritance, polymorphism, abstract, interfaces, etc</h2>
+<hr>
+
+<p>Inheritance is probably the most important OOP concept. Creating a new type that is a
+descendant of another type is the foundation of the Java class hierarchy.
+</p>
+<p>To set up our introduction to inheritance, we introduce another commonly seen OOP technique,
+<i>composition</i>, which looks similar to inheritance. Once composition is seen and understood the
+contrast between it and inheritance becomes clear.</p>
+
+<h2>Composition</h2>
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/Account.java"><font size="+2"><b></b></font></a><font size="+2"><b><a name="accountClass"></a>Account.java</b></font>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+// Account class:  stripped down version, no setters
+public class Account
+{
+	private String name;
+	private double balance;</font></pre><pre><font face="Consolas" size="+1">	public Account(String name, double balance)
+	{
+		this.name = name;
+		this.balance = balance;
+	}
+	public String getName()
+	{
+		return name;
+	}
+	public double getBalance()
+	{
+		return balance;
+ 	}
+	public void deposit(double amount)
+	{
+		balance += amount;
+	}
+	public void withdrawal(double amount)
+	{
+		if (balance &gt;= amount)
+			balance -= amount;
+		// else handle NSF condition
+	}
+	// transfers funds OUT of this account To another account
+	public void transferTo( Account other, double amount )
+	{
+		if (balance &gt;= amount)
+		{
+			withdrawal( amount );     // (attempt) withdrawal from this account
+			other.deposit( amount ); // deposit into other account
+
+		}
+		// else handle NSF condition
+	}
+
+	public String toString()
+	{
+		return name + " $" + balance ;
+	}
+}</font></pre></td></tr></tbody></table>
+<p>And a test program to illustrating composing another class on an existing class.</p>
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/AccountTransfer.java"><font size="+2"><b>AccountTransfer.java</b></font></a>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+// Account Transfer passes one account object into a
+// member method of another account object
+
+public class AccountTransfer
+{
+    public static void main(String args[])
+    {
+	// initialize a couple Accounts
+
+	Account cust1 = new Account("Michael",100.00);
+	Account cust2 = new Account("Joel",200.00);
+
+	// echo accounts after initialization
+	System.out.println(cust1);
+	System.out.println(cust2);
+
+	System.out.println("Xferring $50.00 from " + cust1.getName() + " to " + cust2.getName() );
+	cust1.transferTo(cust2, 50.00);
+       </font></pre><pre><font face="Consolas" size="+1">	// echo accounts after transfer
+	System.out.println(cust1);
+	System.out.println(cust2);
+    } //END main
+}</font></pre></td></tr></tbody></table>
+
+<p>Once new data types are defined,&nbsp; objects of that type can be declared
+as data members of other classes just like primitives are used.</p>
+
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/JointTest.java"><font size="+2"><b>JointTest.java</b></font></a>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+public class JointTest
+{
+	public static void main(String args[])
+	{
+		Account cust1 = new Account("Mike",100.00);
+		Account cust2 = new Account("Sue",200.00);
+		Joint partners = new Joint(cust1,cust2);
+		partners.print();
+		System.out.println("'Joint' balance is: " + partners.getBalance());
+	}
+}
+
+// Notice we include our class definition INSIDE the same file as the App to saves space
+class Joint
+{
+	private Account first;  // Composition - data member is itself a class
+	private Account second; // Composition - data member is itself a class
+	public Joint(Account f, Account s)
+	{
+		first = f;
+		second = s;
+	}
+	public double getBalance()
+	{
+		return first.getBalance() + second.getBalance();
+	}
+	public void print()
+	{
+		System.out.println(first);
+		System.out.println(second );
+	}
+}</font></pre></td></tr></tbody></table>
+
+
+<hr>
+
+<h2>Inheritance</h2>
+
+<p>Inheritance is the real payoff of OOP. It allow reuse of code by allowing one class to extend
+the definition of a previous class. Typically the existing class is called the <b>parent</b> class,
+and the derived or extended class is called the <b>child</b> class.
+</p>
+
+<p>As usual we start with a simple example:</p>
+
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/SpecialAccountTest.java"><font size="+2"><b>SpecialAccountTest.java</b></font></a>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+public class SpecialAccountTest
+{
+	public static void main(String args[])
+	{
+		SpecialAccount cust1 = new SpecialAccount("J",100.00,.10);
+		System.out.println(cust1.getName());
+		cust1.deposit(100.00);
+		System.out.println(cust1.getBalance());
+		System.out.println(cust1.getPercent());
+    	}
+}
+
+class SpecialAccount extends Account
+{
+	double percent;
+	public SpecialAccount(String name,double balance,double percent)
+	{
+		super(name,balance); // calling parent C'Tor
+		this.percent = percent;
+	}
+	public double getPercent()
+	{
+		return percent;
+	}
+}
+</font></pre></td></tr></tbody></table>
+
+<br>
+It is the keyword <b>extends</b> that causes the new child class to inherit everything the parent has. The keyword
+<b>super</b> calls the parent's constructor. Just like the keyword call <b>this(..)</b> to call a sibling constructor, <b>super(..)</b>
+must be the first line in the child class' constructor if you want to call your parent's constructor.
+<p>
+
+If you want to prevent your class from being extended use the keyword final before the word class.
+</p><pre><big><big>
+public <strong>final</strong> MyClass  // no one can extend this class
+{
+  // ....
+}
+</big></big></pre>
+<!---------------------------------------------------------------------------------------------------------->
+
+<h2>Polymorphism</h2>
+<p>Inheritance has more advantages than just code re-use.&nbsp; Inheritance
+allows binding of overwritten methods to be resolved dynamically at run-time.</p>
+
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/PolyTest.java"><font size="+2"><b>PolyTest.java</b></font></a>
+<table border="1" bgcolor="white "><tbody><tr><td><pre><font face="Consolas" size="+1">
+/* Polytest.java - demonstrates Polymorphism by deriving child and grandchild
+   classes, then overloading print method of child and grandchild.
+*/
+public class PolyTest // Polytest is out main App
+{
+	public static void main(String args[])
+	{
+		A a[] = { new A(), new B(), new C() };
+		for (int i = 0; i &lt; 3; i++)
+		a[i].print();
+	}
+} // END PolyTest app
+
+
+//------------------------------------------------------------------------
+// We combine our class definitions in same file as main App to save space
+
+class A
+{
+	A() { }
+	void print(){System.out.println("A"); }
+}
+class B extends A
+{
+	B( ){ }
+	void print(){ System.out.println("B"); }
+}
+class C extends B
+{
+	C(){}
+	void print(){ System.out.println("C");}
+}</font></pre></td></tr></tbody></table>
+
+<p>You may be looking at the above example and wondering "Why do we need
+polymorphism? " After all you could have just declared 3 totally unrelated
+classes, given them all print method and then invoked the print of each class.&nbsp; The convenience of Polymorphism is that all the classes share the is-a relationship to the base class. As such we can declare an array of these classes. Note, you can't declare an array of different types. Thus every element in the array is-a Type A object. It is not until it is referenced at runtime that the object is distinguished to be an A ,B or C object and the proper print method resolved.
+</p>
+<p>The advantages are numerous. You can pass a reference to any of the types into a method expecting the base type.</p>
+
+<h2>The Object Class</h2>
+
+<p>
+	The Object class is the ancestor of all classes in Java. Every class in Java or every class you write, it is as if you wrote <b>extends Object </b>after every class prototype.
+</p>
+
+<p>Since all classes descend from Object, there are a few notable methods that all classes inherit from Object. The first two inherited methods need to be overwritten by your class definition if they are to have any functionality. The last one is implemented generically</p>
+<ul>
+	<li>public boolean equals( Object o)
+	</li><li>public String toString()
+	</li><li>public final native Class getClass()
+</li></ul>
+
+<p>To overwrite equals and toString you simple write our
+own version of those two methods in your class. definition.</p>
+<h2>Abstract Classes</h2>
+<p>Often a class is designed with the expectation that it only make sense to use
+this class to derive extended classes from but to instantiate classes directly
+from this type. Typically this base class characterizes behavior that derived
+classes will implement in their own special way.&nbsp; A <b>Shape</b> class
+could describe behavior for various different kinds of shapes, and each derived
+class such as <b>Circle,</b> <b>Square </b>and <b>Rectangle</b> would provide specific
+different methods to implement the behaviors.&nbsp;</p>
+<p><b>An Abstract class provides a base class that is
+suitable for derivation but cannot be directly instantiated.</b></p>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+abstract class Shape
+{
+	public abstract double area();
+	public abstract double perimeter();
+}
+</font></pre></td></tr>
+</tbody></table>
+
+
+
+
+Notice now that our abstract class also has abstract methods declared inside. This means that any class
+designer than derives from Shape must also override area() and perimeter().  Not every abstract class
+need have all its methods be abstract but should have at least one. Those abstract methods
+must be over written with fully coded versions in the extended class' source file.<br>
+
+
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+Shape s = new Shape();  // ILLEGAL! Can't instantiate an abstract class
+</font></pre></td></tr>
+</tbody></table>
+<p>
+&nbsp;
+</p>
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/TestShapes.java"><font size="+2"><b>TestShapes.java</b></font></a>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+/* TestShapes.java defines an abstract Shape class then defines Circle and Square
+   classes based on Shape.
+*/
+
+public class TestShapes
+{
+	public static void main(String args[])
+	{
+		Circle c = new Circle( 3.0 );
+		System.out.println("Circle C has area: " + c.area() );
+		System.out.println("Circle C has perimeter: " + c.perimeter() );
+		Square s = new Square( 10.0 );
+		System.out.println("Square S has area: " + s.area() );
+		System.out.println("Square S has perimeter: " + s.perimeter() );
+	} // END main
+} // END TestShapes
+
+// ----------------------------------------------------------------------------------
+// We define our Shape, Circle &amp; Square classes in the same file as our App
+// ----------------------------------------------------------------------------------
+
+// ..................................................................................
+abstract class Shape
+{
+	public abstract double area();
+	public abstract double perimeter();
+}
+
+//...................................................................................
+class Circle extends Shape  // OK - we derive from Shape
+{
+	double radius;  // we added this data member to our abstract base definition - OK
+	Circle( double radius )
+	{
+		this.radius = radius;
+	}
+	public double area() //  REQURIED  override of abstract parent's area
+	{
+		return( Math.PI * radius*radius );
+	}
+	public double perimeter()  // REQUIRED override of  abstract parent's perimeter
+	{
+		return( 2.0 * Math.PI * radius );
+	}
+}
+
+// ..................................................................................
+class Square extends Shape  // OK - we derive from Shape
+{
+	private double side;  // we added this data member to our abstract base definition - OK
+	Square( double side )
+	{
+		this.side = side;
+	}
+	public double area() //  REQURIED  override of abstract parent's area
+	{
+		return( side * side );
+	}
+	public double perimeter()  // REQUIRED override of  abstract parent's perimeter
+	{
+		return( 4.0 * side );
+	}
+}</font></pre></td></tr>
+</tbody></table>
+
+
+<h2>Static members</h2>
+<p>Often is needful to define data in a class that serves the class at large rather than
+any particular object of the class.&nbsp;&nbsp;The <b>static</b> keyword
+overrides the separate storage of data for each object and causes only one
+instance of the member to be created.&nbsp; This static&nbsp; member (data or
+method) exists at runtime even before any object&nbsp; of the class has been
+instanced.</p>
+
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/StaticTest.java"><font size="+2"><b>StaticTest.java</b></font></a>
+<table border="1" bgcolor="white"><tbody><tr><td><pre><font face="Consolas" size="+1">
+/* StaticTest.java defines a class with a static data member which gets incremented
+   every time an object of the class is constructed.
+
+   *Note: we get to the static variable in foo class via the class name foo
+		NOT via a ref var of the class
+*/
+
+public class StaticTest
+{
+	public static void main(String args[] )
+	{
+		System.out.println("numObjects before any created: " + Foo.numObjects );
+
+		Foo f1 = new Foo();
+		Foo f2 = new Foo();
+		Foo f3 = new Foo();
+		Foo f4 = new Foo();
+
+		System.out.println("numObjects after some objects created: " + Foo.numObjects );
+	} // END main
+}
+
+// we put our class definition inside our app file again
+
+class Foo
+{
+	public static int numObjects;
+
+	Foo()
+	{
+		++numObjects; // increment static object counter
+		System.out.println("Just constructed foo object " + Foo.numObjects );
+	}
+}
+</font></pre></td></tr></tbody></table>
+
+
+<p>&nbsp;</p>
+
+
+<h2>Interfaces</h2>
+
+
+<p>In C++ a class definition can inherit from multiple parents. This is multiple inheritance and it is not directly supported in Java.&nbsp; Java does however have the <b>interface</b> keyword which provides a way to inherit the interface from more than one parent.</p>
+
+
+<p>An interface is like an abstract class except:</p>
+<ol>
+    <li> abstract keyword is used to create an abstract class and it can be used with methods also whereas interface keyword is used to create interface and it can’t be used with methods.
+    </li><li> subclasses use extends keyword to extend an abstract class and they need to provide implementation of all the declared methods in the abstract class unless the subclass is also an abstract class whereas subclasses use implements keyword to implement interfaces and should provide implementation for all the methods declared in the interface.
+    </li><li> Abstract classes can have methods with implementation whereas interface provides absolute abstraction and can’t have any method implementations.
+   </li><li>  Abstract classes can have constructors but interfaces can’t have constructors.
+    </li><li> Abstract class have all the features of a normal java class except that we can’t instantiate it. We can use abstract keyword to make a class abstract but interfaces are a completely different type and can have only public static final constants and method declarations.
+    </li><li> Abstract classes methods can have access modifiers as public, private, protected, static but interface methods are implicitly public and abstract, we can’t use any other access modifiers with interface methods.
+    </li><li> A subclass can extend only one abstract class but it can implement multiple interfaces.
+    </li><li> Abstract classes can extend other class and implement interfaces but interface can only extend other interfaces.
+    </li><li> We can run an abstract class if it has main() method but we can’t run an interface because they can’t have main method implementation.
+    </li><li> Interfaces are used to define contract for the subclasses whereas abstract class also define contract but it can provide other methods implementations for subclasses to use.
+</li></ol>
+
+<p>A class can implement multiple interfaces.</p>
+
+<a href="https://people.cs.pitt.edu/~hoffmant/java-topics/OOP-2/examples/TestDrawable.java"><font face="Consolas" size="+2"><b>TestDrawable.java</b></font></a>
+<table border="1" face="Consolas" bgcolor="white"><tbody><tr><td><pre><font size="+1">
+/* TestDrawable.java
+   define an interface and implement that interface in a class
+*/
+
+interface Drawable
+{
+	public final static int BLUE = 1, RED = 2;
+	void setColor(int c);
+	void setPosition(double x, double y);
+	void draw();
+} //END interface Drawable
+
+
+// by implementing Drawable we are required to define the code bodies for
+// setColor, setPosition, and draw inside this class
+
+class DrawableCircle extends Circle implements Drawable
+{
+	private int color;
+	private double xpos, ypos;
+	public DrawableCircle(int radius)
+	{
+		super(radius); // just called our Parent (Circle's) C'Tor
+		System.out.println("Just constructed Drawable Circle");
+	}
+	public void setColor(int c)
+	{
+		color = c;
+		System.out.println("set Color");
+	}
+
+	public void setPosition(double x, double y)
+	{
+		xpos = x; ypos = y;
+		System.out.println("Set Position");
+	}
+
+	public void draw()
+	{
+		System.out.println("Draw");
+	}
+
+} // END DrawableCircle class
+
+// ================ App with Main method ==================
+
+public class TestDrawable
+{
+  public static void main(String args[])
+  {
+	DrawableCircle c = new DrawableCircle(5);
+	System.out.println(c.area());
+	System.out.println(c.perimeter());
+	c.setColor(Drawable.BLUE);
+	c.setPosition(1.5, 2.5);
+	c.draw();
+  }
+}
+</font></pre></td></tr></tbody></table>
+
+<hr>
+<h1 align="center">Summary</h1>
+<hr>
+
+<h4>A typical class definition follows these rules:&nbsp;</h4>
+<ul>
+	<li>contained in a file of same name as the class but with ".java" added
+   </li><li>has 1 or more private data fields
+   </li><li>has 1 or more public constructors to initialize objects of the class
+   </li><li>has a copy constructor to allow initialization to a value of another object of the type
+   </li><li>has a set and get method for each private field
+   </li><li>has a toString method for convenient print of the object state
+</li></ul>
+
+<h4>Once a class definition file has been written - the class name represents a new data type.</h4>
+<ul>
+	<li>the class name becomes another data type name and objects (variables) of the class type can be declared just like with other data types
+	</li><li>the <b>new</b> keyword must be used to call the object's constructor
+	</li><li>more than 1 object of the class type may be declared - just like with other data types
+   </li><li>each object constructed gets its own copy of the fields and methods
+</li></ul>
+
+<p>Classes can inherit from classes via the keyword extend<br>
+Classes can declare members in 1 of 4 access modes: public, private, protected,
+package<br>
+Inheritance enables polymorphism which is runtime binding of reference to
+overridden methods<br>
+Java supports interfaces to effect multiple inheritance</p>
+
+
+
+</body></html>
