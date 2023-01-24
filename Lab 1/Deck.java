@@ -37,16 +37,14 @@ public class Deck
 	// MODIFIES THE MEMBER ARRAY DECK
 	public void inShuffle()
 	{
-		int tCount = 0;
-        int mCount = deck.length/2;
+		int count = 0;
         int[] modifiedDeck = new int[deck.length];
 
         for(int i=0; i<deck.length; i+=2)
         {
-            modifiedDeck[i] = deck[mCount];
-            modifiedDeck[i + 1] = deck[tCount];
-            mCount++;
-            tCount++;
+            modifiedDeck[i] = deck[count + deck.length/2];
+            modifiedDeck[i + 1] = deck[count];
+            count++;
         }
         deck = modifiedDeck;
 	}
@@ -55,16 +53,14 @@ public class Deck
 	// MODIFIES THE MEMBER ARRAY DECK
 	public void outShuffle()
 	{
-		int tCount = 0;
-        int mCount = deck.length/2;
+		int count = 0;
         int[] modifiedDeck = new int[deck.length];
 
         for(int i=0; i<deck.length; i+=2)
         {
-            modifiedDeck[i] = deck[tCount];
-            modifiedDeck[i + 1] = deck[mCount];
-            mCount++;
-            tCount++;
+            modifiedDeck[i] = deck[count];
+            modifiedDeck[i + 1] = deck[count + deck.length/2];
+            count++;
         }
         deck = modifiedDeck;
 	}
@@ -80,6 +76,6 @@ public class Deck
                 count++;
             }
         }
-		return(count == deck.length); // JUST HERE TO COMPILE
+		return(count == deck.length);
 	}
 }	// END DECK CLASS
