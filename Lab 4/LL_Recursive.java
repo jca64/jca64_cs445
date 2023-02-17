@@ -26,14 +26,31 @@ public class LL_Recursive<T>
  	// NO LOOPS ALLOWED NO RECURSION ALLOWED.  THE SEARCH WILL BE RECURSIVE THOUGH
  	public boolean contains( T key )
  	{
- 		return false; //JUST TO MAKE IT COMPILE. REPLACE WITH YOUR CODE
+ 		return(search(key) != null);
 	}
 
 	// YOU MUST WRITE THIS USING RECURSION
 	// YOU WILL HAVE TO WRITE A HELPER METHOD. THE HELPER WILL BE RECURSIVE
 	public void insertAtTail(T data)
 	{
-		// YOUR CODE HERE. MUST USE insertAtFront() IN BASE CASE
+		tailHelper(head, data);
+	}
+
+	private void tailHelper(Node<T> cur, T data)
+	{
+		if(head == null)
+		{
+			insertAtFront(data);
+		}
+		else if(cur.next == null)
+		{
+			Node<T> tail = new Node<T>(data, null);
+			cur.next = tail;
+		}
+		else
+		{
+			tailHelper(cur.next, data);
+		}
 	}
 
 	// WE will illustrate this in class today 2/6/2022
@@ -51,22 +68,42 @@ public class LL_Recursive<T>
 	// YOU WILL HAVE TO WRITE A HELPER METHOD. THE HELPER WILL BE RECURSIVE
 	public String toString()
 	{
+		return (toStringHelper(head));
+	}
+	private String toStringHelper(Node<T> cur)
+	{
 		String toString = "";
-
-		for (Node<T> curr = head; curr != null; curr = curr.next)
+		if(cur != null)
 		{
-			toString += curr.data;		// WE ASSUME OUR T TYPE HAS toString() DEFINED
-			if (curr.next != null)
+			toString += cur.data;		
+			if (cur.next != null)
+			{
 				toString += " -> ";
+				toString += toStringHelper(cur.next);
+			}
 		}
-
-		return toString + "\n";
+		return toString;
 	}
 
 	// MUST BE RECURSIVE. YOU WILL HAVE TO WRITE A HELPER METHOD. THE HELPER WILL BE RECURSIVE
 	public Node<T> search( T key )
 	{
-		return null; //JUST TO MAKE IT COMPILE. REPLACE WITH YOUR CODE
+		return searchHelper(head, key);
+	}
+	private Node<T> searchHelper(Node<T> cur, T key)
+	{
+		if(cur == null)
+		{
+			return null;
+		}
+		else if(cur.data.equals(key))
+		{
+			return cur;
+		}
+		else
+		{
+			return searchHelper(cur.next, key);
+		}
 	}
 } //END OF LL_Recursive CLASS
 
